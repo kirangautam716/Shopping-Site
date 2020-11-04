@@ -21,6 +21,7 @@ export class ProductListComponent implements OnInit {
 
   AddNewProduct(data) {
     this.commonApi.changeMessage(data);
+    this.commonApi.updateCartProduct(data);
     console.log(data)
   }
 

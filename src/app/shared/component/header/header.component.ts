@@ -24,7 +24,7 @@ export class HeaderComponent implements OnInit {
 
   ngOnInit(): void {
     this.subscription = this.commonApi.product_count.subscribe(res => {
-
+      debugger
       console.log('product_count', res);
       this.product_count = res;
     });

@@ -3,10 +3,10 @@ import { FormBuilder, FormGroup } from "@angular/forms";
 import { CommonService } from 'src/app/shared/services/common.service';
 export interface cardData {
   name: string;
-  price: any;
+  price: number;
   description: string;
   image: string;
-  quantity: any;
+  quantity: number;
   id: number;
   subtotal: number;
 }
@@ -27,6 +27,7 @@ export class CardPageComponent implements OnInit {
   message: any;
   subscription: any;
   productList: [];
+  product_count: number = 0;
 
   @ViewChild("myDialog", { static: true }) myDialog: TemplateRef<any>;
   constructor(
@@ -39,9 +40,8 @@ export class CardPageComponent implements OnInit {
 
   ngOnInit() {
     this.subscription = this.commonApi.currentMessage.subscribe(res => {
-      debugger
-      console.log("CardList", this.CardList);
-      if (res != null) {
+      this.message = res;
+      if (this.message != null) {
         this.AddProductInCard();
       }
     });
@@ -50,9 +50,7 @@ export class CardPageComponent implements OnInit {
   ngOnDestroy() {
     this.subscription.unsubscribe();
   }
-  makeCardList(data) {
 
-  }
 
 
   reset_form() {
@@ -87,32 +85,17 @@ export class CardPageComponent implements OnInit {
 
   saveProduct() {
     let obj = {
+      id: this.message.id,
       name: this.message.name,
       price: Number(this.message.price),
-      category: this.message.category,
       description: this.message.description,
       image: this.message.image,
       quantity: 1,
       subtotal: Number(this.message.price)
     }
-    // this.CardList.push(obj);
+    this.CardList.push(obj);
+    // this.commonApi.updateNoofProduct(this.CardList.length);
   }
-
-
-
-  // saveProduct() {
-  //   let obj = {
-  //     name: this.message.name,
-  //     price: Number(this.message.price),
-  //     category: this.message.category,
-  //     description: this.message.description,
-  //     image: this.message.image,
-  //     quantity: 1,
-  //     subtotal: Number(this.message.price)
-  //   }
-  //   this.CardList.push(obj);
-  // }
-
 
   ProcessSales() {
     this.dialog.open(this.myDialog);
@@ -124,57 +107,70 @@ export class CardPageComponent implements OnInit {
 
 
 
+  count_product(data, index) {
+    for (let i = 0; i <= data.length; i++) {
+      if (index == i) {
+        this.product_count = data[index].quantity;
+      }
+    }
+
+  }
 
 
   IncreaseQuantity(index) {
     this.CardList[index].quantity = this.CardList[index].quantity + 1;
-    // this.CardList[index].subtotal = this.CardList[index].price * this.CardList[index].quantity;
-    this.ProductCardForm.controls['quantity'].setValue(this.CardList[index].quantity + 1);
+    this.CardList[index].subtotal = this.CardList[index].price * this.CardList[index].quantity;
+    // this.ProductCardForm.controls['quantity'].setValue(this.CardList[index].quantity + 1);
+    this.count_product(this.CardList, index);
+    // this.commonApi.updateNoofProduct(this.product_count);
+
   }
   DecreaseQunatity(index) {
     this.CardList[index].quantity = this.CardList[index].quantity - 1;
-    // this.CardList[index].subtotal = this.CardList[index].price * this.CardList[index].quantity;
-    this.ProductCardForm.controls['quantity'].setValue(this.CardList[index].quantity - 1);
+    this.CardList[index].subtotal = this.CardList[index].price * this.CardList[index].quantity;
+    // this.ProductCardForm.controls['quantity'].setValue(this.CardList[index].quantity - 1);
     if (this.CardList[index].quantity == 0) {
       if (index > -1) {
         this.CardList.splice(index, 1);
       }
     }
+    this.count_product(this.CardList, index);
+    // this.commonApi.updateNoofProduct(this.product_count);
   }
   RemoveProduct(index) {
     this.CardList.splice(index, 1);
     this.ProductCardForm.controls['quantity'].setValue(0);
   }
 
-  // getCardSubTotal() {
-  //   var numbers = this.CardList.map(i => i.subtotal);
-  //   var sum = numbers.reduce((a, b) => a + b, 0);
-  //   return sum;
-  // }
+  getCardSubTotal() {
+    var numbers = this.CardList.map(i => i.subtotal);
+    var sum = numbers.reduce((a, b) => a + b, 0);
+    return sum;
+  }
 
-  // calculateVat() {
-  //   let subtotal: number = this.getCardSubTotal();
-  //   let vat = (subtotal / 100) * this.Vat;
-  //   return vat;
-  // }
-  // calculatedDiscount() {
-  //   let subtotal: number = this.getCardSubTotal();
-  //   let discount = (subtotal / 100) * this.Discount;
-  //   return discount;
-  // }
+  calculateVat() {
+    let subtotal: number = this.getCardSubTotal();
+    let vat = (subtotal / 100) * this.Vat;
+    return vat;
+  }
+  calculatedDiscount() {
+    let subtotal: number = this.getCardSubTotal();
+    let discount = (subtotal / 100) * this.Discount;
+    return discount;
+  }
 
-  // calcualateGrandTotal() {
-  //   let subtotal: number = this.getCardSubTotal();
-  //   let vat: number = this.calculateVat();
-  //   let discount: number = this.calculatedDiscount();
-  //   let grandToral: number = 0;
-  //   if (vat > discount) {
-  //     grandToral = subtotal + vat - discount;
-  //   } else {
-  //     grandToral = subtotal + discount - vat;
-  //   }
-  //   return grandToral;
-  // }
+  calcualateGrandTotal() {
+    let subtotal: number = this.getCardSubTotal();
+    let vat: number = this.calculateVat();
+    let discount: number = this.calculatedDiscount();
+    let grandToral: number = 0;
+    if (vat > discount) {
+      grandToral = subtotal + vat - discount;
+    } else {
+      grandToral = subtotal + discount - vat;
+    }
+    return grandToral;
+  }
 }
 
 

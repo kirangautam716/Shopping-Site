@@ -21,7 +21,9 @@
               <span>{{product.quantity}}</span>
               <span (click)="IncreaseQuantity(i)" style="background-color: gray; color: white;">+</span>
             </td>
-            <td> {{product.price}}</td>
+            <td>
+              {{product.subtotal.toString().length > 6 ? product.subtotal.toString().substring(0,6)+"..." : product.subtotal.toString()}}
+              INR</td>
           </tr>
         </ng-container>
       </tbody>
